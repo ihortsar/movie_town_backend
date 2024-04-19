@@ -1,0 +1,50 @@
+body {
+    background-image: url('./img/movies_background.jpg');
+
+}
+
+.main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.col-lg-5 {
+    width: 100% !important;
+}
+
+.form-content.my-3.p-3 {
+    width: 50%;
+    display: flex !important;
+    justify-content: center !important;
+}
+
+button.col-md-12.btn.btn-dark {
+    margin-top: 15px;
+}
+
+.container.my-3.p-3 {
+    max-width: 50%;
+}
+
+.alert.alert-info {
+    background-color: white;
+    margin: 0;
+}
+
+.logInButton {
+    background-color: #C11119;
+    outline: none;
+    border-radius: 3px;
+    border: none;
+    padding: 10px;
+}
+
+.shadow-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+}

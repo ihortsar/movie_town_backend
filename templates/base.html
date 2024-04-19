@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+  </head>
+
+  <body>
+    {% include 'snippets/base_css.html' %}
+    {% include 'snippets/base_js.html' %}
+
+    <!-- Body -->
+    <style type="text/css">
+      .main {
+        min-height: 100vh;
+        height: 100%;
+      }
+    </style>
+
+    <div class="main">
+      <div class="shadowContainer">
+        <a href="http://localhost:4200/"><button class="logInButton">Log in</button></a>
+      </div>
+      {% block content %}
+
+      {% endblock %}
+    </div>
+    <!-- End Body -->
+
+    <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  </body>
+</html>
