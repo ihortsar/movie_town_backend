@@ -20,9 +20,11 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 from user.views import (
+    CurrentUser,
     CustomLoginView,
+    Movie_Select,
     ResetPasswordView,
-    Signup,
+    SignUp,
     password_reset_email_sent,
 )
 from django.contrib.auth import views as auth_views
@@ -31,7 +33,9 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
     path("admin/", admin.site.urls),
     path("login/", CustomLoginView.as_view()),
-    path("signup/", Signup.as_view()),
+    path("signup/", SignUp.as_view()),
+    path("current_user/", CurrentUser.as_view()),
+    path("movie_select/", Movie_Select.as_view()),
     path("verification/", include("verify_email.urls")),
     path("password_reset/", ResetPasswordView.as_view()),
     path(

@@ -117,8 +117,12 @@ WSGI_APPLICATION = "movie_town_backend.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "movie_town",
+        "USER": "postgres",
+        "PASSWORD": "1111",  # Your PostgreSQL password if required
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
 

@@ -8,8 +8,12 @@ from user.models import CustomUser
 class CustomUserAdmin(admin.ModelAdmin):
     add_form = UserCreationForm
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
-        ('Personal Info', {'fields': ('first_name', 'last_name', 'birth_date', 'is_active')}),
-        ("Address", {"fields": ("address",)}), 
+        (None, {"fields": ("email", "password")}),
+        (
+            "Personal Info",
+            {"fields": ("first_name", "last_name", "birth_date", "is_active")},
+        ),
+        ("Address", {"fields": ("address",)}),
+        ("Selected Movies", {"fields": ("selected_movies",)}),
     )
-    list_display = ('email', 'first_name', 'last_name', 'is_staff')
+    list_display = ("email", "first_name", "last_name", "is_staff")
