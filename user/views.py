@@ -3,6 +3,10 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from movies.models import Movie
+from movies.serializers import MovieSerializer
+from .serializers import UserSerializer
 from user.forms import User, UserCreationForm
 from rest_framework import status
 from verify_email.email_handler import send_verification_email
@@ -10,6 +14,8 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib.auth.views import PasswordResetView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password
 
 # Create your views here.
 
@@ -35,9 +41,17 @@ class CustomLoginView(ObtainAuthToken):
             return Response({"error": "Confirm your Email"}, status=400)
         # Generate or retrieve the authentication token for the user
         token, created = Token.objects.get_or_create(user=user)
-
+        users_videos = Movie.objects.filter(user=user)
+        users_videos = MovieSerializer(users_videos, many=True).data
         # Return the authentication token along with user details
-        return Response({"token": token.key, "user_id": user.pk, "email": user.email})
+        return Response(
+            {
+                "token": token.key,
+                "user": UserSerializer(user).data,
+                "email": user.email,
+                "users_videos": users_videos,
+            }
+        )
 
     def authenticate(self, email=None, password=None):
         # Use Django's authentication mechanism to authenticate the user using email and password
@@ -47,6 +61,7 @@ class CustomLoginView(ObtainAuthToken):
                 print("Retrieved user:", user)
                 if user.check_password(password):
                     print("Password matched")
+
                     return user
                 else:
                     print("Password did not match")
@@ -73,36 +88,22 @@ class SignUp(APIView):
 
 
 class CurrentUser(APIView):
-    def post(self, request):
-        try:
-            # Attempt to retrieve the user based on the provided user_id
-            current_user = User.objects.get(pk=request.data.get("user_id"))
-            return JsonResponse(
-                {
-                    "user": [
-                        {"email": current_user.email},
-                        {"first_name": current_user.first_name},
-                        {"last_name": current_user.last_name},
-                        {"adress": current_user.address},
-                    ]
-                },
-                status=200,
-            )
-        except User.DoesNotExist:
-            # If user with the provided user_id does not exist, return an error response
-            return JsonResponse({"error": "User not found"}, status=404)
-
     def put(self, request):
-        # Check if the user exists
         try:
             current_user = User.objects.get(pk=request.data.get("id"))
         except User.DoesNotExist:
-            # If user with the provided primary key does not exist, return a 404 response
             return JsonResponse({"error": "User not found"}, status=404)
-
-        # If the user exists, save the user's data and return a success response
+        for key, value in request.data.items():
+            setattr(current_user, key, value)
+        old_password = request.data.get("old_password")
+        if old_password and not check_password(old_password, current_user.password):
+            return JsonResponse({"error": "Old password is incorrect"}, status=400)
+        new_password = request.data.get("new_password")
+        if new_password:
+            current_user.password = make_password(new_password)
         current_user.save()
-        return JsonResponse({"message": "User data updated successfully"})
+
+        return JsonResponse(data=UserSerializer(current_user).data, status=200)
 
 
 class FrontendLoginRedirectMiddleware:
@@ -141,15 +142,14 @@ def password_reset_email_sent(request):
 
 class Movie_Select(APIView):
     def post(self, request):
-        movie_data = request.data.get('movie')  # Access movie data from the request
-        user_id = request.data.get('user_id')  
+        movie_data = request.data.get("movie")  # Access movie data from the request
+        user_id = request.data.get("user_id")
         try:
             user = User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return Response(
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
-
         # Add the movie to the user's selected_movies list
         user.selected_movies.append(movie_data)
 

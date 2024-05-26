@@ -30,6 +30,8 @@ from user.views import (
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    path("django-rq/", include("django_rq.urls")),
+    path("__debug__/", include("debug_toolbar.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
     path("admin/", admin.site.urls),
     path("login/", CustomLoginView.as_view()),

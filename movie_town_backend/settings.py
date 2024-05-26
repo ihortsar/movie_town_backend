@@ -49,22 +49,50 @@ MEDIA_URL = "/media/"
 # Application definition
 LOGIN_URL = "localhost:4200/"
 INSTALLED_APPS = [
+    "verify_email.apps.VerifyEmailConfig",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "movies",
+    "movies.apps.MoviesConfig",  # config from movies.apps(signals)
     "rest_framework",
     "user",
     "django.contrib.admin",
     "django.contrib.auth",
     "rest_framework.authtoken",
     "corsheaders",
-    "verify_email.apps.VerifyEmailConfig",
+    "import_export",
+    "debug_toolbar",
+    "django_rq",
 ]
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+RQ_QUEUES = {
+    "default": {
+        "HOST": "localhost",
+        "PORT": 6379,
+        "DB": 0,
+        "PASSWORD": "foobared",
+        "DEFAULT_TIMEOUT": 360,
+        "WORKER_CLASS": "rq_win.WindowsWorker",
+        "AUTOCOMMIT": True,
+    },
+}
 
+
+# redis setting
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "PASSWORD": "foobared",
+        },
+        "KEY_PREFIX": "movie_town",
+    }
+}
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_HOST_USER = "ihortsarkov@gmail.com"
 EMAIL_HOST_PASSWORD = "pwre oqtd ggxe qgmt"
@@ -75,6 +103,7 @@ DEFAULT_FROM_EMAIL = "noreply<no_reply@domain.com>"
 AUTH_USER_MODEL = "user.CustomUser"
 ACCOUNT_USERNAME_REQUIRED = False
 MIDDLEWARE = [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -85,7 +114,11 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "user.views.FrontendLoginRedirectMiddleware",
 ]
-
+INTERNAL_IPS = [
+    # ...
+    "127.0.0.1",
+    # ...
+]
 ROOT_URLCONF = "movie_town_backend.urls"
 
 TEMPLATES = [
