@@ -71,7 +71,6 @@ RQ_QUEUES = {
         "HOST": "localhost",
         "PORT": 6379,
         "DB": 0,
-        "PASSWORD": "foobared",
         "DEFAULT_TIMEOUT": 360,
         "WORKER_CLASS": "rq_win.WindowsWorker",
         "AUTOCOMMIT": True,
@@ -86,7 +85,6 @@ CACHES = {
         "LOCATION": "redis://127.0.0.1:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "PASSWORD": "foobared",
         },
         "KEY_PREFIX": "movie_town",
     }

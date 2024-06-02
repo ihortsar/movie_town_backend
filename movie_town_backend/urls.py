@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
+from movies.views import Video
 from user.views import (
     CurrentUser,
     CustomLoginView,
@@ -38,6 +39,9 @@ urlpatterns = [
     path("signup/", SignUp.as_view()),
     path("current_user/", CurrentUser.as_view()),
     path("movie_select/", Movie_Select.as_view()),
+    path("video/", Video.as_view()),
+    path("video/<int:user_id>/", Video.as_view()),
+    path("video/<int:user_id>/<int:movie_id>/", Video.as_view()),
     path("verification/", include("verify_email.urls")),
     path("password_reset/", ResetPasswordView.as_view()),
     path(

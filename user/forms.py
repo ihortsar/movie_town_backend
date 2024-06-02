@@ -11,12 +11,11 @@ class UserCreationForm(UserCreationForm):
     birthday = forms.CharField()
 
     def clean(self):
+        # adjust data from frontend to backend
         cleaned_data = super().clean()
         cleaned_data["first_name"] = cleaned_data.get("firstName")
         cleaned_data["last_name"] = cleaned_data.get("lastName")
-        cleaned_data["birth_date"] = cleaned_data.get(
-            "birthday"
-        )  # adjust data from frontend to backend
+        cleaned_data["birth_date"] = cleaned_data.get("birthday")  
         return cleaned_data
 
     class Meta:

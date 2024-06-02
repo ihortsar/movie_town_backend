@@ -4,7 +4,7 @@ from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
 
-# ImportExport class inheritance.
+# ImportExport class exitinheritance.
 class CustomMovieResource(resources.ModelResource):
     class Meta:
         model = Movie
