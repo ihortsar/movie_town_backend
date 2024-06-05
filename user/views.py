@@ -73,17 +73,13 @@ class CustomLoginView(ObtainAuthToken):
 
 class SignUp(APIView):
     def post(self, request):
-        form = UserCreationForm(request.data)
+        form = UserCreationForm(request.data["data"])
         if form.is_valid():
-            form.save()  # Save the user directly using the form
+            form.save()
             send_verification_email(request, form)
-            return Response(
-                {
-                    "message": "User created successfully. Check your email for verification."
-                },
-                status=status.HTTP_201_CREATED,
-            )
+            return Response({"message": "User created successfully. Check your email for verification."}, status=status.HTTP_201_CREATED)
         else:
+            print(form.errors)  # Debugging: Print form errors
             return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
