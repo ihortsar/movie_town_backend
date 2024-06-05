@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -43,4 +43,3 @@ class Video(APIView):
         movie.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-# Create your views here.
