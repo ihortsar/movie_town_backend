@@ -26,7 +26,12 @@ SECRET_KEY = "django-insecure-*c9&69u^btt3wg*br(46*mxjm&!xi4hf==y2832rgb5yjh6+9p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "localhost:4200/"]
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "localhost:4200/",
+    "http://movie-town.ihor-tsarkov.com",
+]
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_ALL_HEADERS = False
 CORS_ALLOW_HEADERS = [
@@ -101,6 +106,7 @@ DEFAULT_FROM_EMAIL = "noreply<no_reply@domain.com>"
 AUTH_USER_MODEL = "user.CustomUser"
 ACCOUNT_USERNAME_REQUIRED = False
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -109,7 +115,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "user.views.FrontendLoginRedirectMiddleware",
 ]
 INTERNAL_IPS = [
