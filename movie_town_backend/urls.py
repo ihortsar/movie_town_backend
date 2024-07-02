@@ -28,8 +28,9 @@ from user.views import (
     SignUp,
     password_reset_email_sent,
 )
+from movie_town_backend import settings
 from django.contrib.auth import views as auth_views
-
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 urlpatterns = [
     path("django-rq/", include("django_rq.urls")),
     path("__debug__/", include("debug_toolbar.urls")),
@@ -63,7 +64,7 @@ urlpatterns = [
         password_reset_email_sent,
         name="password_reset_email_sent",
     ),
-]
+] + staticfiles_urlpatterns()
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
