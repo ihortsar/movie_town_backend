@@ -35,6 +35,7 @@ urlpatterns = [
     path("django-rq/", include("django_rq.urls")),
     path("__debug__/", include("debug_toolbar.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
+    path('', admin.site.urls),
     path("admin/", admin.site.urls),
     path("login/", CustomLoginView.as_view(), name="login"),
     path("signup/", SignUp.as_view(), name="signup"),
