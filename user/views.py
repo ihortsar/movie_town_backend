@@ -17,10 +17,12 @@ from django.urls import reverse_lazy
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 
+
 # Create your views here.
 
 
 class CustomLoginView(ObtainAuthToken):
+    
     def post(self, request, *args, **kwargs):
         # Get the email and password from the request data
         email = request.data.get("email")
