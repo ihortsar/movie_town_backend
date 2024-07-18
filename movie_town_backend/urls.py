@@ -27,11 +27,14 @@ from user.views import (
     ResetPasswordView,
     SignUp,
     password_reset_email_sent,
+    get_csrf_token
 )
 from movie_town_backend import settings
 from django.contrib.auth import views as auth_views
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
 urlpatterns = [
+    path('api/csrf-token/',get_csrf_token, name='get_csrf_token'),
     path("django-rq/", include("django_rq.urls")),
     path("__debug__/", include("debug_toolbar.urls")),
     path("accounts/", include("django.contrib.auth.urls")),

@@ -16,28 +16,15 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
-from rest_framework.authentication import BasicAuthentication
-from django.middleware.csrf import get_token
 
 
-
-from django.middleware.csrf import get_token
-from django.http import JsonResponse
-
-def get_csrf_token(request):
-    # Ensure the request method is GET (or modify as needed)
-    if request.method == 'GET':
-        # Generate CSRF token using Django's get_token function
-        csrf_token = get_token(request)
-        # Return the token in a JSON response
-        return JsonResponse({'csrfToken': csrf_token})
-    else:
-        # Handle other HTTP methods if necessary
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
-
+# Create your views here.
+@ensure_csrf_cookie
+def csrf(request):
+    return JsonResponse({'csrfToken': get_token(request)})
 
 class CustomLoginView(ObtainAuthToken):
-   
+    
     def post(self, request, *args, **kwargs):
         # Get the email and password from the request data
         email = request.data.get("email")
