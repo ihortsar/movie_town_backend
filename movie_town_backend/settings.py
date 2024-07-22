@@ -19,17 +19,13 @@ REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+         'rest_framework.permissions.AllowAny',
     ]
+    
 }
 
-REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ]
-}
 
 
 SECRET_KEY = "django-insecure-*c9&69u^btt3wg*br(46*mxjm&!xi4hf==y2832rgb5yjh6+9p"
@@ -41,7 +37,7 @@ DEBUG =True
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 # Application definition
-LOGIN_URL = "localhost:4200/"
+LOGIN_URL = "movie-town.ihor-tsarkov.com/login"
 INSTALLED_APPS = [
     "verify_email.apps.VerifyEmailConfig",
     "django.contrib.contenttypes",
@@ -60,19 +56,30 @@ INSTALLED_APPS = [
     "django_rq",
 ]
 
+#CORS_ALLOW_ALL_ORIGINS = True
+
+
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_HEADERS = ['*']
-CSRF_COOKIE_DOMAIN = 'movie-town.ihor-tsarkov.com'
 
+
+CSRF_COOKIE_DOMAIN=".ihor-tsarkov.com"
 CSRF_TRUSTED_ORIGINS = [
-   'http://localhost',
-    'https://movies-town.ihor-tsarkov.com',
+   'http://localhost:4200',
+    'https://*.ihor-tsarkov.com',
 ]
-CSRF_COOKIE_SECURE = False
-
+CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = False  # Ensure this is False to allow JavaScript access
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_NAME = 'csrftoken'
+CSRF_HEADER_NAME = 'X-Csrftoken'
 
 
+CORS_ALLOW_HEADERS = [
+    'X-Csrftoken',
+    'content-type',
+    'Authorization', 
+]
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost:4200",
@@ -118,16 +125,16 @@ DEFAULT_FROM_EMAIL = "noreply<no_reply@domain.com>"
 AUTH_USER_MODEL = "user.CustomUser"
 ACCOUNT_USERNAME_REQUIRED = False
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",   # CORS should be first
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware", # CSRF middleware here
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "user.views.FrontendLoginRedirectMiddleware",
+    "user.views.FrontendLoginRedirectMiddleware", # Custom middleware at the end
 ]
 
 INTERNAL_IPS = [

@@ -17,75 +17,75 @@ from django.urls import reverse_lazy
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from rest_framework.authentication import BasicAuthentication
+
+
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_GET
 from django.middleware.csrf import get_token
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from rest_framework.decorators import api_view
 
 
-
-from django.middleware.csrf import get_token
-from django.http import JsonResponse
-
+@require_GET
+@ensure_csrf_cookie
 def get_csrf_token(request):
-    # Ensure the request method is GET (or modify as needed)
-    if request.method == 'GET':
-        # Generate CSRF token using Django's get_token function
-        csrf_token = get_token(request)
-        # Return the token in a JSON response
-        return JsonResponse({'csrfToken': csrf_token})
-    else:
-        # Handle other HTTP methods if necessary
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    csrf_token = get_token(request)  # Retrieve the CSRF token
+    response = JsonResponse({'detail': 'CSRF cookie set', 'csrfToken': csrf_token})
+    response["Access-Control-Allow-Origin"] = "https://movies-town.ihor-tsarkov.com"
+    response["Access-Control-Allow-Credentials"] = "true"
+    return response
 
 
-class CustomLoginView(ObtainAuthToken):
-   
-    def post(self, request, *args, **kwargs):
-        # Get the email and password from the request data
-        email = request.data.get("email")
-        password = request.data.get("password")
 
-        # Validate the email and password
-        if email is None or password is None:
-            return Response(
-                {"error": "Please provide both email and password"}, status=400
-            )
+@csrf_exempt
+def test_csrf_exempt_view(request):
+    return JsonResponse({'message': 'CSRF Exempt View'}, status=200)
 
-        # Authenticate the user using email and password
-        user = self.authenticate(email=email, password=password)
-        # If user authentication fails, return an error response
-        if not user:
-            return Response({"error": "Invalid email or password"}, status=400)
-        if not user.is_active:
-            return Response({"error": "Confirm your Email"}, status=400)
-        # Generate or retrieve the authentication token for the user
-        token, created = Token.objects.get_or_create(user=user)
-        users_videos = Movie.objects.filter(user=user)
-        users_videos = MovieSerializer(users_videos, many=True).data
-        # Return the authentication token along with user details
+@csrf_exempt
+def authenticate_user(email, password):
+    """Authenticate user using email and password."""
+    try:
+        user = User.objects.get(email=email)
+        if user.check_password(password):
+            return user
+    except User.DoesNotExist:
+        return None
+
+@csrf_exempt
+def handle_login(email, password):
+    """Handle the login process."""
+    user = authenticate_user(email, password)
+    if not user:
+        return {"error": "Invalid email or password"}, 400
+    if not user.is_active:
+        return {"error": "Confirm your Email"}, 400
+
+    token, created = Token.objects.get_or_create(user=user)
+    users_videos = Movie.objects.filter(user=user)
+    users_videos = MovieSerializer(users_videos, many=True).data
+
+    return {
+        "token": token.key,
+        "user": UserSerializer(user).data,
+        "email": user.email,
+        "users_videos": users_videos,
+    }, 200
+
+@csrf_exempt
+@api_view(['POST'])
+def custom_login(request):
+    """Function-based view for user login."""
+    email = request.data.get("email")
+    password = request.data.get("password")
+
+    if email is None or password is None:
         return Response(
-            {
-                "token": token.key,
-                "user": UserSerializer(user).data,
-                "email": user.email,
-                "users_videos": users_videos,
-            }
+            {"error": "Please provide both email and password"}, status=400
         )
 
-    def authenticate(self, email=None, password=None):
-        # Use Django's authentication mechanism to authenticate the user using email and password
-        if email and password:
-            try:
-                user = User.objects.get(email=email)
-                print("Retrieved user:", user)
-                if user.check_password(password):
-                    print("Password matched")
-
-                    return user
-                else:
-                    print("Password did not match")
-
-            except User.DoesNotExist:
-                pass
-        return None
+    result, status_code = handle_login(email, password)
+    return Response(result, status=status_code)
 
 
 class SignUp(APIView):
