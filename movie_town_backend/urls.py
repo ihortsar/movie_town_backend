@@ -22,13 +22,12 @@ from django.conf.urls.static import static
 from movies.views import Video
 from user.views import (
     CurrentUser,
-    custom_login,
+    CustomLoginView,
     Movie_Select,
     ResetPasswordView,
     SignUp,
     password_reset_email_sent,
-    get_csrf_token,
-   test_csrf_exempt_view
+  
   
 )
 from movie_town_backend import settings
@@ -36,14 +35,12 @@ from django.contrib.auth import views as auth_views
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [
-    path('test-csrf-exempt/', test_csrf_exempt_view, name='test_csrf_exempt'),
-    path('api/get-csrf-token/', get_csrf_token),
+   
     path("django-rq/", include("django_rq.urls")),
     path("__debug__/", include("debug_toolbar.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
-    path('', admin.site.urls),
     path("admin/", admin.site.urls),
-    path('login/', custom_login, name='login'),
+    path('login/', CustomLoginView.as_view(), name='login'),
     path("signup/", SignUp.as_view(), name="signup"),
     path("current_user/", CurrentUser.as_view()),
     path("movie_select/", Movie_Select.as_view()),

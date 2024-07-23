@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,33 +15,10 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
-from rest_framework.authentication import BasicAuthentication
-
-
-from django.views.decorators.csrf import ensure_csrf_cookie
-from django.views.decorators.http import require_GET
-from django.middleware.csrf import get_token
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from rest_framework.decorators import api_view
-
-
-@require_GET
-@ensure_csrf_cookie
-def get_csrf_token(request):
-    csrf_token = get_token(request)  # Retrieve the CSRF token
-    response = JsonResponse({'detail': 'CSRF cookie set', 'csrfToken': csrf_token})
-    response["Access-Control-Allow-Origin"] = "https://movies-town.ihor-tsarkov.com"
-    response["Access-Control-Allow-Credentials"] = "true"
-    return response
+from django.urls import reverse
 
 
 
-@csrf_exempt
-def test_csrf_exempt_view(request):
-    return JsonResponse({'message': 'CSRF Exempt View'}, status=200)
-
-@csrf_exempt
 def authenticate_user(email, password):
     """Authenticate user using email and password."""
     try:
@@ -52,7 +28,6 @@ def authenticate_user(email, password):
     except User.DoesNotExist:
         return None
 
-@csrf_exempt
 def handle_login(email, password):
     """Handle the login process."""
     user = authenticate_user(email, password)
@@ -61,7 +36,9 @@ def handle_login(email, password):
     if not user.is_active:
         return {"error": "Confirm your Email"}, 400
 
+    # Generate or get the token for the user
     token, created = Token.objects.get_or_create(user=user)
+
     users_videos = Movie.objects.filter(user=user)
     users_videos = MovieSerializer(users_videos, many=True).data
 
@@ -72,22 +49,19 @@ def handle_login(email, password):
         "users_videos": users_videos,
     }, 200
 
-@csrf_exempt
-@api_view(['POST'])
-def custom_login(request):
+class CustomLoginView(APIView):
     """Function-based view for user login."""
-    email = request.data.get("email")
-    password = request.data.get("password")
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        password = request.data.get("password")
 
-    if email is None or password is None:
-        return Response(
-            {"error": "Please provide both email and password"}, status=400
-        )
+        if email is None or password is None:
+            return Response(
+                {"error": "Please provide both email and password"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-    result, status_code = handle_login(email, password)
-    return Response(result, status=status_code)
-
-
+        result, status_code = handle_login(email, password)
+        return Response(result, status=status_code)
 class SignUp(APIView):
     def post(self, request):
         form = UserCreationForm(request.data["data"])
@@ -129,7 +103,8 @@ class FrontendLoginRedirectMiddleware:
         if "/verification/user/verify-email/" in request.path:
             # Redirect to the frontend login page if the user is not authenticated
             if not request.user.is_authenticated:
-                return HttpResponseRedirect("http://localhost:4200")
+                login_url = reverse('login')
+                return HttpResponseRedirect(login_url)
 
         return response
 
