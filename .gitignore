@@ -120,3 +120,5 @@ GitHub.sublime-settings
 *.sql
 *.sql.gz
 *.pg_dump
+
+*.csv
