@@ -28,15 +28,14 @@ def authenticate_user(email, password):
     except User.DoesNotExist:
         return None
 
+
 def handle_login(email, password):
-    """Handle the login process."""
     user = authenticate_user(email, password)
     if not user:
         return {"error": "Invalid email or password"}, 400
     if not user.is_active:
         return {"error": "Confirm your Email"}, 400
 
-    # Generate or get the token for the user
     token, created = Token.objects.get_or_create(user=user)
 
     users_videos = Movie.objects.filter(user=user)
@@ -48,6 +47,7 @@ def handle_login(email, password):
         "email": user.email,
         "users_videos": users_videos,
     }, 200
+
 
 class CustomLoginView(APIView):
     """Function-based view for user login."""
@@ -62,6 +62,8 @@ class CustomLoginView(APIView):
 
         result, status_code = handle_login(email, password)
         return Response(result, status=status_code)
+
+
 class SignUp(APIView):
     def post(self, request):
         form = UserCreationForm(request.data["data"])
@@ -138,10 +140,7 @@ class Movie_Select(APIView):
             return Response(
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
-        # Add the movie to the user's selected_movies list
         user.selected_movies.append(movie_data)
-
-        # Save the changes to the user object
         user.save()
         return Response(
             {"message": "Movie added to selected movies"},
