@@ -20,7 +20,7 @@ from django.urls import reverse
 
 
 def authenticate_user(email, password):
-    """Authenticate user using email and password."""
+    """Authenticate user using email and passwords."""
     try:
         user = User.objects.get(email=email)
         if user.check_password(password):
@@ -105,8 +105,9 @@ class FrontendLoginRedirectMiddleware:
         if "/verification/user/verify-email/" in request.path:
             # Redirect to the frontend login page if the user is not authenticated
             if not request.user.is_authenticated:
-                login_url = reverse('login')
-                return HttpResponseRedirect(login_url)
+                # Define the frontend URL to redirect to
+                frontend_login_url = "https://movies-town.ihor-tsarkov.com"
+                return HttpResponseRedirect(frontend_login_url)
 
         return response
 
