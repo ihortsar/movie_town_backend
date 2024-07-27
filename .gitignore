@@ -114,3 +114,11 @@ GitHub.sublime-settings
 !.vscode/launch.json 
 !.vscode/extensions.json 
 .history
+
+# Ignore PostgreSQL database dumps and backups
+*.dump
+*.sql
+*.sql.gz
+*.pg_dump
+
+*.csv
