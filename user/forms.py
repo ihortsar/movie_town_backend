@@ -4,6 +4,11 @@ from django.contrib.auth.forms import UserCreationForm
 
 User = get_user_model()
 
+"""
+    A custom user creation form that extends Django's built-in UserCreationForm.
+    Adds additional fields for first name, last name, and birth date.
+    """
+
 
 class UserCreationForm(UserCreationForm):
     firstName = forms.CharField()
@@ -11,7 +16,14 @@ class UserCreationForm(UserCreationForm):
     birthday = forms.CharField()
 
     def clean(self):
-        # Adjusts data from frontend to backend
+        """
+        Adjusts data from frontend to backend by mapping the custom field names to the internal field names.
+
+        This method is called to perform validation and data normalization.
+
+        Returns:
+            dict: A dictionary of cleaned data with adjusted field names.
+        """
         cleaned_data = super().clean()
         first_name = cleaned_data.get("firstName")
         last_name = cleaned_data.get("lastName")
@@ -30,4 +42,12 @@ class UserCreationForm(UserCreationForm):
             "birth_date",
             "password1",
             "password2",
-        ]  # fields that are required to create a user
+        ]
+        """
+        Meta information for the form that specifies which model it is associated with and
+        which fields should be included in the form.
+
+        Attributes:
+            model (User): The model associated with this form.
+            fields (list): A list of field names to include in the form.
+        """

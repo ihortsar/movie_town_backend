@@ -3,7 +3,24 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.base_user import BaseUserManager
 
 
+"""
+    Custom manager for the CustomUser model. Handles creation of regular users and superusers.
+    """
 class CustomUserManager(BaseUserManager):
+    """
+        Create and return a regular user with an email and password.
+
+        Args:
+            email (str): The email address for the user.
+            password (str, optional): The password for the user.
+            **extra_fields (dict): Additional fields for the user.
+
+        Raises:
+            ValueError: If email is not provided.
+
+        Returns:
+            CustomUser: The created user.
+        """
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("The Email field must be set")
@@ -14,8 +31,23 @@ class CustomUserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         return user
+    
 
     def create_superuser(self, email, password, **extra_fields):
+        """
+        Create and return a superuser with an email and password.
+
+        Args:
+            email (str): The email address for the superuser.
+            password (str): The password for the superuser.
+            **extra_fields (dict): Additional fields for the superuser.
+
+        Raises:
+            ValueError: If `is_staff` or `is_superuser` is not set to True.
+
+        Returns:
+            CustomUser: The created superuser.
+        """
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         if extra_fields.get("is_staff") is not True:
@@ -25,6 +57,9 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
+"""
+    Custom user model that extends AbstractUser. Uses email as the unique identifier instead of a username.
+"""
 class CustomUser(AbstractUser):
     username = None
     email = models.EmailField("Email Address", max_length=50, unique=True)
@@ -39,4 +74,10 @@ class CustomUser(AbstractUser):
     objects = CustomUserManager()
 
     def __str__(self):
+        """
+        Return a string representation of the user, which is the user's email.
+
+        Returns:
+            str: The email of the user.
+        """
         return self.email
