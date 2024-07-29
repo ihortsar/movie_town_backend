@@ -27,26 +27,27 @@ from user.views import (
     ResetPasswordView,
     SignUp,
     password_reset_email_sent,
-  
-  
 )
 from movie_town_backend import settings
 from django.contrib.auth import views as auth_views
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [
-   
     path("django-rq/", include("django_rq.urls")),
     path("__debug__/", include("debug_toolbar.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
     path("admin/", admin.site.urls),
-    path('login/', CustomLoginView.as_view(), name='login'),
+    path("login/", CustomLoginView.as_view(), name="login"),
     path("signup/", SignUp.as_view(), name="signup"),
-    path("current_user/", CurrentUser.as_view()),
+    path("current_user/", CurrentUser.as_view(), name="current_user"),
     path("movie_select/", Movie_Select.as_view()),
     path("video/", Video.as_view(), name="video"),
-    path("video/<int:user_id>/", Video.as_view()),
-    path("video/<int:user_id>/<int:movie_id>/", Video.as_view()),
+    path("video/<int:user_id>/", Video.as_view(), name="video_with_user"),
+    path(
+        "video/<int:user_id>/<int:movie_id>/",
+        Video.as_view(),
+        name="video_with_user_movie",
+    ),
     path("verification/", include("verify_email.urls")),
     path("password_reset/", ResetPasswordView.as_view()),
     path(

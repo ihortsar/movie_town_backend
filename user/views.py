@@ -20,7 +20,16 @@ from django.urls import reverse
 
 
 def authenticate_user(email, password):
-    """Authenticate user using email and passwords."""
+    """
+    Authenticate a user based on their email and password.
+    
+    Args:
+        email (str): The email address of the user.
+        password (str): The password of the user.
+    
+    Returns:
+        User: The authenticated user object if credentials are valid, None otherwise.
+    """
     try:
         user = User.objects.get(email=email)
         if user.check_password(password):
@@ -30,6 +39,16 @@ def authenticate_user(email, password):
 
 
 def handle_login(email, password):
+    """
+    Handle user login, authenticate user, and return necessary details.
+    
+    Args:
+        email (str): The email address of the user.
+        password (str): The password of the user.
+    
+    Returns:
+        tuple: A dictionary containing the token, user data, email, and user’s movies, and a status code.
+    """
     user = authenticate_user(email, password)
     if not user:
         return {"error": "Invalid email or password"}, 400
@@ -50,7 +69,15 @@ def handle_login(email, password):
 
 
 class CustomLoginView(APIView):
-    """Function-based view for user login."""
+    """
+        Handle POST requests for user login.
+        
+        Args:
+            request (Request): The HTTP request object.
+        
+        Returns:
+            Response: The response object containing the result of the login attempt.
+        """
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         password = request.data.get("password")
@@ -65,6 +92,15 @@ class CustomLoginView(APIView):
 
 
 class SignUp(APIView):
+    """
+        Handle POST requests for user registration.
+        
+        Args:
+            request (Request): The HTTP request object containing user data.
+        
+        Returns:
+            Response: The response object containing the result of the registration attempt.
+        """
     def post(self, request):
         form = UserCreationForm(request.data["data"])
         if form.is_valid():
@@ -77,6 +113,15 @@ class SignUp(APIView):
 
 
 class CurrentUser(APIView):
+    """
+        Handle PUT requests to update user details.
+        
+        Args:
+            request (Request): The HTTP request object containing user data.
+        
+        Returns:
+            JsonResponse: The response object with the updated user data or error message.
+        """
     def put(self, request):
         try:
             current_user = User.objects.get(pk=request.data.get("id"))
@@ -100,6 +145,15 @@ class FrontendLoginRedirectMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        """
+        Process the request and redirect if necessary.
+        
+        Args:
+            request (Request): The HTTP request object.
+        
+        Returns:
+            HttpResponse or Response: The response object, possibly redirected.
+        """
         response = self.get_response(request)
 
         if "/verification/user/verify-email/" in request.path:
@@ -113,10 +167,20 @@ class FrontendLoginRedirectMiddleware:
 
 
 def password_reset(request):
+    """
+    Render the password reset page.
+    
+    Args:
+        request (Request): The HTTP request object.
+    
+    Returns:
+        HttpResponse: The rendered password reset page.
+    """
     return render(request, "registration/password_reset.html")
 
 
 class ResetPasswordView(SuccessMessageMixin, PasswordResetView):
+    
     template_name = "password_reset.html"
     email_template_name = "password_reset_email.html"
     success_url = reverse_lazy("password_reset_email_sent")
@@ -133,6 +197,15 @@ def password_reset_email_sent(request):
 
 class Movie_Select(APIView):
     def post(self, request):
+        """
+        Handle POST requests to add a movie to the user's selected movies.
+        
+        Args:
+            request (Request): The HTTP request object containing movie and user data.
+        
+        Returns:
+            Response: The response object indicating the result of the movie selection.
+        """
         movie_data = request.data.get("movie")  # Access movie data from the request
         user_id = request.data.get("user_id")
         try:

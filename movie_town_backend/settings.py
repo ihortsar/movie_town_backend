@@ -53,21 +53,6 @@ INSTALLED_APPS = [
 ]
 
 
-
-# CORS_ALLOW_ALL_ORIGINS = True
-
-
-
-# CSRF_TRUSTED_ORIGINS = [
-#  "http://localhost:4200",
-# "http://127.0.0.1",
-# "https://*.ihor-tsarkov.com",
-# "http://127.0.0.1:8000"
-# ]
-
-
-
-
 ALLOWED_HOSTS = [
    "127.0.0.1",
    "localhost",
@@ -78,6 +63,7 @@ ALLOWED_HOSTS = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
     "http://127.0.0.1:8000",
+    
 ]
 
 RQ_QUEUES = {

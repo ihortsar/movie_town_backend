@@ -66,6 +66,8 @@ class Video(APIView):
         Returns:
             Response: An empty `Response` with a 204 status code if the deletion is successful.
         """
+        print("kwargs:", kwargs)  # Print kwargs at the beginning
+
         movie_id = kwargs.get("movie_id")
         movie = get_object_or_404(Movie, pk=movie_id)
         movie.delete()
