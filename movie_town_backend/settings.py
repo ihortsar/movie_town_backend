@@ -24,11 +24,15 @@ REST_FRAMEWORK = {
     ],
 }
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:4200',
+    # Add other domains if needed
+]
 SECRET_KEY = "django-insecure-*c9&69u^btt3wg*br(46*mxjm&!xi4hf==y2832rgb5yjh6+9p"
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
@@ -72,7 +76,7 @@ RQ_QUEUES = {
         "PORT": 6379,
         "DB": 0,
         "DEFAULT_TIMEOUT": 360,
-        "WORKER_CLASS": "rq_win.WindowsWorker",
+        #for windows:"WORKER_CLASS": "rq_win.WindowsWorker",
         "AUTOCOMMIT": True,
     },
 }

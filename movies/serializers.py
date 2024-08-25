@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-from movies.tasks import convert_path
 from .models import Movie
 from django.conf import settings
 import os

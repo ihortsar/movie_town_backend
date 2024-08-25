@@ -4,17 +4,18 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Movie
 from .serializers import MovieSerializer
-from django.core.cache.backends.base import DEFAULT_TIMEOUT
-from django.views.decorators.cache import cache_page
-from django.conf import settings
-from django.utils.decorators import method_decorator
+
+# from django.core.cache.backends.base import DEFAULT_TIMEOUT
+# from django.views.decorators.cache import cache_page
+# from django.conf import settings
+# from django.utils.decorators import method_decorator
 
 
-CACHE_TTL = getattr(settings, "CACHE_TTL", DEFAULT_TIMEOUT)
+# CACHE_TTL = getattr(settings, "CACHE_TTL", DEFAULT_TIMEOUT)
 
 
 class Video(APIView):
-    @method_decorator(cache_page(CACHE_TTL))
+    # @method_decorator(cache_page(CACHE_TTL))
     def get(self, request, *args, **kwargs):
         """
         Retrieve the list of movies based on their access settings.
@@ -63,6 +64,7 @@ class Video(APIView):
                 "access", "private"
             )
             movie_serializer.save()
+
             return Response(movie_serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(movie_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -89,4 +91,5 @@ class Video(APIView):
             )
 
         movie.delete()
+
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -24,11 +24,10 @@ from user.views import (
     CurrentUser,
     CustomLoginView,
     Movie_Select,
+    PasswordResetConfirmView,
     ResetPasswordView,
     SignUp,
-    password_reset_email_sent,
 )
-from movie_town_backend import settings
 from django.contrib.auth import views as auth_views
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
@@ -52,9 +51,7 @@ urlpatterns = [
     path("password_reset/", ResetPasswordView.as_view()),
     path(
         "password-reset-confirm/<uidb64>/<token>/",
-        auth_views.PasswordResetConfirmView.as_view(
-            template_name="password_reset_confirm.html"
-        ),
+        PasswordResetConfirmView.as_view(),
         name="password_reset_confirm",
     ),
     path(
@@ -64,14 +61,9 @@ urlpatterns = [
         ),
         name="password_reset_complete",
     ),
-    path(
-        "password_reset_email_sent/",
-        password_reset_email_sent,
-        name="password_reset_email_sent",
-    ),
 ] + staticfiles_urlpatterns()
 
 
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

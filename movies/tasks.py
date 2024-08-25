@@ -26,10 +26,20 @@ def create_thumbnail(source_path, time="00:00:01", width=640, height=360):
     thumbnail_dir = os.path.join(settings.MEDIA_ROOT, "thumbnails")
     os.makedirs(thumbnail_dir, exist_ok=True)
     thumbnail_path = os.path.join(thumbnail_dir, f"{file_name}.jpg")
-    cmd = '{} -y -i "{}" -ss {} -vframes 1 -vf "scale={}:{}" -update 1 "{}"'.format(
+
+    cmd = '{} -y -i "{}" -ss {} -vframes 1 -vf "scale={}:{}" "{}"'.format(
         FFMPEG_PATH, source_path, time, width, height, thumbnail_path
     )
-    subprocess.run(cmd, shell=True)
+    
+    try:
+        result = subprocess.run(cmd, shell=True, check=True, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise RuntimeError(f"FFmpeg command failed with error: {result.stderr}")
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"FFmpeg error: {e.stderr}") from e
+    except Exception as e:
+        raise RuntimeError(f"Unexpected error: {e}") from e
+
     return thumbnail_path
 
 
@@ -42,7 +52,7 @@ def convert_720p(source_path):
     Args:
     - source_path (str): The path to the source video file.
     """
-    print("converted480")
+    print("converted 720")
 
     new_file_name = convert_path(source_path, "720p")
     cmd = '{} -y -i "{}" -s hd720 -c:v libx264 -crf 23 -c:a aac -strict -2 "{}"'.format(

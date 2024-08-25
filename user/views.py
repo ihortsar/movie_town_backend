@@ -1,32 +1,35 @@
 from django.shortcuts import render
+from django.views import View
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from movies.models import Movie
 from movies.serializers import MovieSerializer
+from user.models import CustomUser
 from .serializers import UserSerializer
 from user.forms import User, UserCreationForm
 from rest_framework import status
 from verify_email.email_handler import send_verification_email
 from django.http import HttpResponseRedirect, JsonResponse
-from django.contrib.auth.views import PasswordResetView
-from django.contrib.messages.views import SuccessMessageMixin
-from django.urls import reverse_lazy
+from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
-from django.urls import reverse
-
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
 
 
 def authenticate_user(email, password):
     """
     Authenticate a user based on their email and password.
-    
+
     Args:
         email (str): The email address of the user.
         password (str): The password of the user.
-    
+
     Returns:
         User: The authenticated user object if credentials are valid, None otherwise.
     """
@@ -41,11 +44,11 @@ def authenticate_user(email, password):
 def handle_login(email, password):
     """
     Handle user login, authenticate user, and return necessary details.
-    
+
     Args:
         email (str): The email address of the user.
         password (str): The password of the user.
-    
+
     Returns:
         tuple: A dictionary containing the token, user data, email, and user’s movies, and a status code.
     """
@@ -70,21 +73,23 @@ def handle_login(email, password):
 
 class CustomLoginView(APIView):
     """
-        Handle POST requests for user login.
-        
-        Args:
-            request (Request): The HTTP request object.
-        
-        Returns:
-            Response: The response object containing the result of the login attempt.
-        """
+    Handle POST requests for user login.
+
+    Args:
+        request (Request): The HTTP request object.
+
+    Returns:
+        Response: The response object containing the result of the login attempt.
+    """
+
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         password = request.data.get("password")
 
         if email is None or password is None:
             return Response(
-                {"error": "Please provide both email and password"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "Please provide both email and password"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         result, status_code = handle_login(email, password)
@@ -93,20 +98,26 @@ class CustomLoginView(APIView):
 
 class SignUp(APIView):
     """
-        Handle POST requests for user registration.
-        
-        Args:
-            request (Request): The HTTP request object containing user data.
-        
-        Returns:
-            Response: The response object containing the result of the registration attempt.
-        """
+    Handle POST requests for user registration.
+
+    Args:
+        request (Request): The HTTP request object containing user data.
+
+    Returns:
+        Response: The response object containing the result of the registration attempt.
+    """
+
     def post(self, request):
         form = UserCreationForm(request.data["data"])
         if form.is_valid():
             form.save()
             send_verification_email(request, form)
-            return Response({"message": "User created successfully. Check your email for verification."}, status=status.HTTP_201_CREATED)
+            return Response(
+                {
+                    "message": "User created successfully. Check your email for verification."
+                },
+                status=status.HTTP_201_CREATED,
+            )
         else:
             print(form.errors)  # Debugging: Print form errors
             return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -114,14 +125,15 @@ class SignUp(APIView):
 
 class CurrentUser(APIView):
     """
-        Handle PUT requests to update user details.
-        
-        Args:
-            request (Request): The HTTP request object containing user data.
-        
-        Returns:
-            JsonResponse: The response object with the updated user data or error message.
-        """
+    Handle PUT requests to update user details.
+
+    Args:
+        request (Request): The HTTP request object containing user data.
+
+    Returns:
+        JsonResponse: The response object with the updated user data or error message.
+    """
+
     def put(self, request):
         try:
             current_user = User.objects.get(pk=request.data.get("id"))
@@ -147,10 +159,10 @@ class FrontendLoginRedirectMiddleware:
     def __call__(self, request):
         """
         Process the request and redirect if necessary.
-        
+
         Args:
             request (Request): The HTTP request object.
-        
+
         Returns:
             HttpResponse or Response: The response object, possibly redirected.
         """
@@ -166,43 +178,60 @@ class FrontendLoginRedirectMiddleware:
         return response
 
 
-def password_reset(request):
-    """
-    Render the password reset page.
-    
-    Args:
-        request (Request): The HTTP request object.
-    
-    Returns:
-        HttpResponse: The rendered password reset page.
-    """
-    return render(request, "registration/password_reset.html")
+
+class ResetPasswordView(APIView):
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        try:
+            user = CustomUser.objects.get(email=email)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_url = (
+                f"{request.scheme}://localhost:4200/reset-password/{uid}/{token}/"
+            )
+            send_mail(
+                subject="Password Reset Requested",
+                message=f"Click the link to reset your password: {reset_url}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            return JsonResponse({"message": "Password reset email sent"}, status=200)
+
+        except User.DoesNotExist:
+            return JsonResponse({"error": "Email address not found"}, status=404)
+
+    def form_invalid(self, form):
+        return JsonResponse({"errors": form.errors}, status=400)
 
 
-class ResetPasswordView(SuccessMessageMixin, PasswordResetView):
-    
-    template_name = "password_reset.html"
-    email_template_name = "password_reset_email.html"
-    success_url = reverse_lazy("password_reset_email_sent")
+class PasswordResetConfirmView(APIView):
+    def post(self, request, uidb64, token, *args, **kwargs):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = CustomUser.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+            user = None
 
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        self.success_message = "Your password has been successfully reset."
-        return response
-
-
-def password_reset_email_sent(request):
-    return render(request, "email_sent.html")
+        if user is not None and default_token_generator.check_token(user, token):
+            new_password = request.data.get("new_password")
+            if new_password:
+                user.set_password(new_password)
+                user.save()
+                return Response({"message": "Password has been reset."}, status=200)
+            return Response({"error": "New password not provided."}, status=400)
+        else:
+            return Response({"error": "Invalid token or user ID."}, status=400)
 
 
 class Movie_Select(APIView):
     def post(self, request):
         """
         Handle POST requests to add a movie to the user's selected movies.
-        
+
         Args:
             request (Request): The HTTP request object containing movie and user data.
-        
+
         Returns:
             Response: The response object indicating the result of the movie selection.
         """
